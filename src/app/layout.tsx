@@ -3,6 +3,7 @@ import { Fraunces } from "next/font/google";
 import "./globals.css";
 import { TextureOverlay } from "@/components/texture-overlay";
 import { CustomCursor } from "@/components/custom-cursor";
+import { MusicProvider } from "@/components/music-provider";
 
 const fraunces = Fraunces({
   variable: "--font-fraunces",
@@ -25,7 +26,7 @@ export default function RootLayout({
       <body className={`${fraunces.variable} antialiased`}>
         <TextureOverlay />
         <CustomCursor />
-        {children}
+        <MusicProvider>{children}</MusicProvider>
       </body>
     </html>
   );

@@ -88,7 +88,7 @@ export function ValPrompt() {
 
       {/* Val prompt */}
       <motion.div
-        className='absolute right-8 bottom-16 z-30 flex flex-col items-center md:right-16 md:bottom-20 lg:right-24'
+        className='absolute right-12 bottom-16 z-30 flex flex-col items-center overflow-visible md:right-20 md:bottom-20 lg:right-28'
         initial={{ opacity: 0, scale: 0, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", damping: 15, stiffness: 200 }}

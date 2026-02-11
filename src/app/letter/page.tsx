@@ -1,49 +1,28 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSounds } from "@/hooks/useSounds";
-import { useMusic } from "@/hooks/useMusic";
+import { useGlobalMusic } from "@/components/music-provider";
 import { Snowflakes } from "@/components/snowflakes";
-import { SoundToggle } from "@/components/sound-toggle";
+import { PageHeader } from "@/components/page-header";
 
 export default function LetterPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [isReading, setIsReading] = useState(false);
   const { playSound } = useSounds();
-  const musicStartedRef = useRef(false);
-
-  const music = useMusic({
-    src: "/music/snowman.mp3",
-    baseVolume: 0.2,
-    fadeInDuration: 2500,
-  });
-
-  // Start music on first interaction
-  const startMusic = useCallback(() => {
-    if (musicStartedRef.current) return;
-    musicStartedRef.current = true;
-    music.play();
-  }, [music]);
-
-  useEffect(() => {
-    const events = ["click", "mousemove", "touchstart", "keydown"];
-    events.forEach((e) => document.addEventListener(e, startMusic, { once: true }));
-    return () => {
-      events.forEach((e) => document.removeEventListener(e, startMusic));
-    };
-  }, [startMusic]);
+  const { duck } = useGlobalMusic();
 
   // Duck music based on envelope state
   useEffect(() => {
     if (isReading) {
-      music.duck("click");
+      duck("click");
     } else if (isOpen) {
-      music.duck("hover");
+      duck("hover");
     } else {
-      music.duck("cruise");
+      duck("cruise");
     }
-  }, [isOpen, isReading, music]);
+  }, [isOpen, isReading, duck]);
 
   const handleEnvelopeClick = () => {
     playSound("tap");
@@ -57,7 +36,7 @@ export default function LetterPage() {
 
   return (
     <div className='relative flex h-screen w-screen flex-col items-center justify-center overflow-hidden bg-cream'>
-      <SoundToggle />
+      <PageHeader ctaText='Home to Alex' ctaHref='/' />
       <Snowflakes slowMode={isOpen} />
 
       <AnimatePresence mode='wait'>
@@ -278,6 +257,33 @@ export default function LetterPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Footer */}
+      <footer
+        className='absolute bottom-0 flex w-full flex-col items-center justify-center pb-8'
+        style={{ height: 100 }}
+      >
+        <div className='staple mb-4' />
+        <motion.button
+          onClick={() => {
+            playSound("switch");
+            duck("cruise");
+            window.location.href = "/";
+          }}
+          className='group relative border-none bg-transparent text-sm uppercase tracking-widest text-ink-red'
+          style={{
+            fontFamily: "var(--font-fraunces), serif",
+            fontWeight: 600,
+            letterSpacing: "0.1em",
+            padding: "8px 20px",
+          }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Home to Alex
+          <span className='absolute bottom-0.5 left-1/2 h-0.5 w-0 -translate-x-1/2 bg-ink-red transition-all duration-300 group-hover:w-full' />
+        </motion.button>
+      </footer>
     </div>
   );
 }

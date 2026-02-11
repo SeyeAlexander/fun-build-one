@@ -169,6 +169,16 @@ body {
   pointer-events: none;
 }
 
+/* Marquee animation */
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.33%);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
