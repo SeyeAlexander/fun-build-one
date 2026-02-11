@@ -67,10 +67,10 @@ export default function LetterPage() {
             }}
           >
             <div
-              className='relative rounded-sm bg-white p-10 shadow-2xl md:p-16'
+              className='relative overflow-y-auto rounded-sm bg-white p-8 shadow-2xl md:p-16'
               style={{
                 width: "min(90vw, 580px)",
-                minHeight: "60vh",
+                maxHeight: "70vh",
                 fontFamily: "var(--font-fraunces), serif",
                 boxShadow: "0 25px 60px rgba(139, 0, 0, 0.15), 0 4px 20px rgba(0,0,0,0.1)",
               }}
@@ -144,7 +144,7 @@ export default function LetterPage() {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 2.2 }}
                 >
-                  Forever yours ❤️
+                  Forever yours, Oluwaseye ❤️
                 </motion.p>
               </motion.div>
             </div>
@@ -163,7 +163,7 @@ export default function LetterPage() {
               animate={{ opacity: 1 }}
               transition={{ delay: 2.5 }}
             >
-              ← Close letter
+              Close letter
             </motion.button>
           </motion.div>
         ) : (
@@ -230,7 +230,7 @@ export default function LetterPage() {
                 {/* "Mon Cœur" — centered on envelope */}
                 {!isOpen && (
                   <div
-                    className='absolute inset-0 z-[6] flex items-center justify-center'
+                    className='absolute inset-0 z-6 flex items-center justify-center'
                     style={{ pointerEvents: "none" }}
                   >
                     <p
@@ -247,65 +247,19 @@ export default function LetterPage() {
                     </p>
                   </div>
                 )}
-
-                {/* Stamp — top right corner */}
-                {!isOpen && (
-                  <div
-                    className='absolute top-3 right-3 z-[7] flex flex-col items-center justify-center rounded-sm border-2 border-dashed border-white/30 bg-white/10 p-1.5 backdrop-blur-sm md:top-4 md:right-4 md:p-2'
-                    style={{
-                      width: "clamp(48px, 8vw, 72px)",
-                      height: "clamp(56px, 9vw, 84px)",
-                    }}
-                  >
-                    {/* Heart inside stamp */}
-                    <svg
-                      viewBox='0 0 40 40'
-                      className='mb-0.5 w-5 md:w-6'
-                      style={{
-                        filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.2))",
-                      }}
-                    >
-                      <path
-                        d='M20 35 C10 27, 0 20, 0 12 C0 4, 6 0, 12 0 C16 0, 19.2 3.2, 20 6 C20.8 3.2, 24 0, 28 0 C34 0, 40 4, 40 12 C40 20, 30 27, 20 35Z'
-                        fill='#D91A1A'
-                      />
-                    </svg>
-                    <p
-                      className='text-center font-bold uppercase text-white/80'
-                      style={{
-                        fontFamily: "var(--font-fraunces), serif",
-                        fontSize: "clamp(0.4rem, 1vw, 0.55rem)",
-                        letterSpacing: "0.12em",
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      14 FÉV
-                    </p>
-                    <p
-                      className='text-center text-white/50'
-                      style={{
-                        fontFamily: "var(--font-fraunces), serif",
-                        fontSize: "clamp(0.3rem, 0.8vw, 0.4rem)",
-                        letterSpacing: "0.1em",
-                      }}
-                    >
-                      AMOUR
-                    </p>
-                  </div>
-                )}
               </div>
 
               {/* Letter paper (slides out when open) */}
               <AnimatePresence>
                 {isOpen && (
                   <motion.div
-                    className='absolute left-[8%] right-[8%] rounded-sm bg-white shadow-lg'
+                    className='absolute left-[8%] top-[10%] right-[8%] rounded-none bg-white shadow-lg'
                     style={{
                       fontFamily: "var(--font-fraunces), serif",
-                      zIndex: 5,
+                      zIndex: -2,
                     }}
-                    initial={{ top: "30%", height: "40%", opacity: 0 }}
-                    animate={{ top: "-55%", height: "80%", opacity: 1 }}
+                    initial={{ top: "30%", height: "30%", opacity: 0 }}
+                    animate={{ top: "-18%", height: "30%", opacity: 1 }}
                     transition={{
                       duration: 0.8,
                       ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
@@ -324,7 +278,7 @@ export default function LetterPage() {
                 className='absolute top-0 left-0 w-full'
                 style={{
                   height: "50%",
-                  zIndex: isOpen ? 1 : 10,
+                  zIndex: isOpen ? -10 : 10,
                   transformOrigin: "top center",
                   background: "#960E0E",
                   clipPath: "polygon(0 0, 50% 100%, 100% 0)",
@@ -353,10 +307,10 @@ export default function LetterPage() {
 
       {/* Footer */}
       <footer
-        className='absolute bottom-0 flex w-full flex-col items-center justify-center pb-8'
+        className='absolute bottom-0 flex w-full flex-col items-center justify-center pb-0'
         style={{ height: 100 }}
       >
-        <div className='staple mb-4' />
+        {/* <div className='staple mb-4' /> */}
         <motion.button
           onClick={() => {
             playSound("switch");

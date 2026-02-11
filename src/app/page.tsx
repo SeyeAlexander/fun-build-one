@@ -17,26 +17,50 @@ export default function HomePage() {
   const row1Ref = useRef<HTMLDivElement>(null);
   const row2Ref = useRef<HTMLDivElement>(null);
 
-  // Mouse tracking for font variation + music ducking
+  // Mouse tracking for font variation + music ducking (desktop only, lerped)
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      const percentX = (e.clientX - centerX) / centerX;
-      const percentY = (e.clientY - centerY) / centerY;
+    // Skip entirely on mobile / touch devices
+    const isMobile = window.innerWidth < 768 || "ontouchstart" in window;
+    if (isMobile) return;
 
-      const targetWeight = 700 + percentY * 100;
-      const targetSoft = 50 + percentX * 50;
+    // Current & target values for lerping
+    let targetWeight = 700;
+    let targetSoft = 50;
+    let targetPX = 0;
+    let targetPY = 0;
+    let curWeight = 700;
+    let curSoft = 50;
+    let curPX = 0;
+    let curPY = 0;
+    let rafId: number;
+
+    const LERP = 0.08; // smooth factor — lower = smoother
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      targetPX = (e.clientX - cx) / cx;
+      targetPY = (e.clientY - cy) / cy;
+      targetWeight = 700 + targetPY * 100;
+      targetSoft = 50 + targetPX * 50;
+    };
+
+    const tick = () => {
+      curWeight = lerp(curWeight, targetWeight, LERP);
+      curSoft = lerp(curSoft, targetSoft, LERP);
+      curPX = lerp(curPX, targetPX, LERP);
+      curPY = lerp(curPY, targetPY, LERP);
 
       const rows = [row1Ref.current, row2Ref.current];
       rows.forEach((row, index) => {
         if (!row) return;
         const factor = index === 0 ? 1 : -0.5;
-        row.style.fontVariationSettings = `"wght" ${targetWeight}, "SOFT" ${targetSoft}, "WONK" 1`;
-        const moveX = percentX * 20 * factor;
-        const moveY = percentY * 10 * factor;
-        row.style.transform = `translate(${moveX}px, ${moveY}px)`;
+        row.style.fontVariationSettings = `"wght" ${curWeight.toFixed(1)}, "SOFT" ${curSoft.toFixed(1)}, "WONK" 1`;
+        row.style.transform = `translate(${(curPX * 20 * factor).toFixed(2)}px, ${(curPY * 10 * factor).toFixed(2)}px)`;
       });
+
+      rafId = requestAnimationFrame(tick);
     };
 
     // Volume ducking on hero hover
@@ -47,11 +71,13 @@ export default function HomePage() {
     document.addEventListener("mousemove", handleMouseMove);
     heroEl?.addEventListener("mouseenter", handleHeroEnter);
     heroEl?.addEventListener("mouseleave", handleHeroLeave);
+    rafId = requestAnimationFrame(tick);
 
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
       heroEl?.removeEventListener("mouseenter", handleHeroEnter);
       heroEl?.removeEventListener("mouseleave", handleHeroLeave);
+      cancelAnimationFrame(rafId);
     };
   }, [duck]);
 
@@ -77,10 +103,10 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer
-        className='relative flex w-full flex-col items-center justify-center pb-8'
+        className='relative flex w-full flex-col items-center justify-center pb-0 md:pb-8'
         style={{ height: 120 }}
       >
-        <div className='staple mb-6' />
+        {/* <div className='staple mb-6' /> */}
 
         <motion.button
           onClick={handleCTA}

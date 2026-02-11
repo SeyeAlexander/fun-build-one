@@ -38,7 +38,7 @@ export function RotatingHero({
   return (
     <div
       id='hero-text'
-      className='flex flex-col items-center'
+      className='flex flex-col items-center mt-[350px] md:mt-0'
       style={{ lineHeight: 0.75, perspective: 1000 }}
     >
       {/* Row 1 */}
@@ -46,7 +46,7 @@ export function RotatingHero({
         ref={row1Ref}
         className='relative z-2 select-none whitespace-nowrap'
         style={{
-          fontSize: "clamp(6rem, 22vw, 24rem)",
+          fontSize: "clamp(7.5rem, 22vw, 24rem)",
           fontWeight: 800,
           fontVariationSettings: '"SOFT" 100, "WONK" 1',
           letterSpacing: "-0.06em",
@@ -78,7 +78,7 @@ export function RotatingHero({
         ref={row2Ref}
         className='relative z-1 select-none whitespace-nowrap'
         style={{
-          fontSize: "clamp(6rem, 22vw, 24rem)",
+          fontSize: "clamp(7.5rem, 22vw, 24rem)",
           fontWeight: 800,
           fontVariationSettings: '"SOFT" 100, "WONK" 1',
           letterSpacing: "-0.06em",
