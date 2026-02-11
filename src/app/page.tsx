@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useTapSound } from "@/hooks/useSound";
+import { useSounds } from "@/hooks/useSounds";
+import { useMusic } from "@/hooks/useMusic";
+import { ValPrompt } from "@/components/val-prompt";
+import { SoundToggle } from "@/components/sound-toggle";
 
 const topWord = "True";
 const bottomWord = "Love";
@@ -33,16 +36,40 @@ const cornerVariants = {
 
 export default function HomePage() {
   const router = useRouter();
-  const playTap = useTapSound();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { playSound } = useSounds();
+  const music = useMusic({
+    src: "/music/slow.mp3",
+    baseVolume: 0.25,
+    fadeInDuration: 2000,
+  });
+
   const row1Ref = useRef<HTMLDivElement>(null);
   const row2Ref = useRef<HTMLDivElement>(null);
+  const musicStartedRef = useRef(false);
+
+  // Start music on first user interaction (browser autoplay policy)
+  const startMusic = useCallback(() => {
+    if (musicStartedRef.current) return;
+    musicStartedRef.current = true;
+    music.play();
+  }, [music]);
 
   useEffect(() => {
+    // Listen for any interaction to start music
+    const events = ["click", "mousemove", "touchstart", "keydown"];
+    events.forEach((e) => document.addEventListener(e, startMusic, { once: true }));
+    return () => {
+      events.forEach((e) => document.removeEventListener(e, startMusic));
+    };
+  }, [startMusic]);
+
+  // Mouse tracking for font variation + music ducking
+  useEffect(() => {
+    let isHovering = false;
+
     const handleMouseMove = (e: MouseEvent) => {
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
-
       const percentX = (e.clientX - centerX) / centerX;
       const percentY = (e.clientY - centerY) / centerY;
 
@@ -54,24 +81,47 @@ export default function HomePage() {
         if (!row) return;
         const factor = index === 0 ? 1 : -0.5;
         row.style.fontVariationSettings = `"wght" ${targetWeight}, "SOFT" ${targetSoft}, "WONK" 1`;
-
         const moveX = percentX * 20 * factor;
         const moveY = percentY * 10 * factor;
         row.style.transform = `translate(${moveX}px, ${moveY}px)`;
       });
     };
 
+    // Volume ducking on hero hover
+    const heroEl = document.getElementById("hero-text");
+    const handleHeroEnter = () => {
+      isHovering = true;
+      music.duck("hover");
+    };
+    const handleHeroLeave = () => {
+      isHovering = false;
+      music.duck("cruise");
+    };
+
     document.addEventListener("mousemove", handleMouseMove);
-    return () => document.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+    heroEl?.addEventListener("mouseenter", handleHeroEnter);
+    heroEl?.addEventListener("mouseleave", handleHeroLeave);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      heroEl?.removeEventListener("mouseenter", handleHeroEnter);
+      heroEl?.removeEventListener("mouseleave", handleHeroLeave);
+    };
+  }, [music]);
 
   const handleCTA = () => {
-    playTap();
-    router.push("/letter");
+    playSound("switch");
+    music.duck("click");
+    setTimeout(() => {
+      music.fadeOut(1200);
+      router.push("/letter");
+    }, 300);
   };
 
   return (
     <div className='relative flex h-screen w-screen flex-col overflow-hidden bg-cream text-ink-red'>
+      <SoundToggle />
+
       {/* Corner info */}
       <motion.div
         className='absolute top-8 left-8 text-base font-normal tracking-widest uppercase'
@@ -83,7 +133,7 @@ export default function HomePage() {
         Feb. 14
       </motion.div>
       <motion.div
-        className='absolute top-8 right-8 text-base font-normal tracking-widest uppercase'
+        className='absolute top-8 right-28 text-base font-normal tracking-widest uppercase'
         style={{ fontFamily: "var(--font-fraunces), serif" }}
         variants={cornerVariants}
         initial='hidden'
@@ -95,14 +145,14 @@ export default function HomePage() {
       {/* Main hero */}
       <main className='relative z-10 flex flex-1 flex-col items-center justify-center'>
         <div
-          ref={containerRef}
+          id='hero-text'
           className='flex flex-col items-center'
           style={{ lineHeight: 0.75, perspective: 1000 }}
         >
           {/* Row 1: True */}
           <div
             ref={row1Ref}
-            className='relative z-[2] select-none whitespace-nowrap'
+            className='relative z-2 select-none whitespace-nowrap'
             style={{
               fontSize: "clamp(6rem, 22vw, 24rem)",
               fontWeight: 800,
@@ -121,7 +171,6 @@ export default function HomePage() {
                 variants={charVariants}
                 initial='hidden'
                 animate='visible'
-                style={{ transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)" }}
               >
                 {char}
               </motion.span>
@@ -130,7 +179,7 @@ export default function HomePage() {
           {/* Row 2: Love */}
           <div
             ref={row2Ref}
-            className='relative z-[1] select-none whitespace-nowrap'
+            className='relative z-1 select-none whitespace-nowrap'
             style={{
               fontSize: "clamp(6rem, 22vw, 24rem)",
               fontWeight: 800,
@@ -150,13 +199,15 @@ export default function HomePage() {
                 variants={charVariants}
                 initial='hidden'
                 animate='visible'
-                style={{ transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)" }}
               >
                 {char}
               </motion.span>
             ))}
           </div>
         </div>
+
+        {/* Val Prompt — bottom right of hero */}
+        <ValPrompt />
       </main>
 
       {/* Footer */}
@@ -167,7 +218,7 @@ export default function HomePage() {
         <div className='staple mb-6' />
         <motion.button
           onClick={handleCTA}
-          className='relative border-none bg-transparent text-ink-red uppercase tracking-widest'
+          className='relative border-none bg-transparent uppercase tracking-widest text-ink-red'
           style={{
             fontFamily: "var(--font-fraunces), serif",
             fontSize: "1.1rem",
@@ -184,7 +235,10 @@ export default function HomePage() {
             style={{ transform: "translateX(-50%)" }}
             initial={{ width: "0%" }}
             whileHover={{ width: "100%" }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            transition={{
+              duration: 0.3,
+              ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+            }}
           />
         </motion.button>
       </footer>

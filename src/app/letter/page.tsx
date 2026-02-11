@@ -1,38 +1,81 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTapSound } from "@/hooks/useSound";
+import { useSounds } from "@/hooks/useSounds";
+import { useMusic } from "@/hooks/useMusic";
+import { Snowflakes } from "@/components/snowflakes";
+import { SoundToggle } from "@/components/sound-toggle";
 
 export default function LetterPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [isReading, setIsReading] = useState(false);
-  const playTap = useTapSound();
+  const { playSound } = useSounds();
+  const musicStartedRef = useRef(false);
+
+  const music = useMusic({
+    src: "/music/snowman.mp3",
+    baseVolume: 0.2,
+    fadeInDuration: 2500,
+  });
+
+  // Start music on first interaction
+  const startMusic = useCallback(() => {
+    if (musicStartedRef.current) return;
+    musicStartedRef.current = true;
+    music.play();
+  }, [music]);
+
+  useEffect(() => {
+    const events = ["click", "mousemove", "touchstart", "keydown"];
+    events.forEach((e) => document.addEventListener(e, startMusic, { once: true }));
+    return () => {
+      events.forEach((e) => document.removeEventListener(e, startMusic));
+    };
+  }, [startMusic]);
+
+  // Duck music based on envelope state
+  useEffect(() => {
+    if (isReading) {
+      music.duck("click");
+    } else if (isOpen) {
+      music.duck("hover");
+    } else {
+      music.duck("cruise");
+    }
+  }, [isOpen, isReading, music]);
 
   const handleEnvelopeClick = () => {
-    playTap();
+    playSound("tap");
     if (!isOpen) {
       setIsOpen(true);
     } else if (!isReading) {
+      playSound("switch");
       setIsReading(true);
     }
   };
 
   return (
     <div className='relative flex h-screen w-screen flex-col items-center justify-center overflow-hidden bg-cream'>
+      <SoundToggle />
+      <Snowflakes slowMode={isOpen} />
+
       <AnimatePresence mode='wait'>
         {isReading ? (
           /* ===== Full Letter View ===== */
           <motion.div
             key='letter-full'
-            className='relative flex flex-col items-center'
+            className='relative z-[60] flex flex-col items-center'
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            transition={{
+              duration: 0.8,
+              ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+            }}
           >
             <div
-              className='relative bg-white rounded-sm shadow-2xl p-10 md:p-16'
+              className='relative rounded-sm bg-white p-10 shadow-2xl md:p-16'
               style={{
                 width: "min(90vw, 560px)",
                 minHeight: "60vh",
@@ -42,7 +85,7 @@ export default function LetterPage() {
             >
               {/* Decorative red border accent */}
               <div
-                className='absolute top-0 left-0 w-full h-1.5 rounded-t-sm'
+                className='absolute top-0 left-0 h-1.5 w-full rounded-t-sm'
                 style={{
                   background: "linear-gradient(90deg, #8B0000, #D91A1A, #A31515)",
                 }}
@@ -54,7 +97,7 @@ export default function LetterPage() {
                 transition={{ delay: 0.3, duration: 0.8 }}
               >
                 <p
-                  className='text-ink-red mb-6 italic'
+                  className='mb-6 italic text-ink-red'
                   style={{ fontSize: "1.6rem", fontWeight: 400 }}
                 >
                   Dear Love,
@@ -93,7 +136,7 @@ export default function LetterPage() {
                 </div>
 
                 <motion.p
-                  className='mt-10 text-ink-red text-right italic'
+                  className='mt-10 text-right italic text-ink-red'
                   style={{ fontSize: "1.3rem" }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -106,10 +149,10 @@ export default function LetterPage() {
 
             {/* Back button */}
             <motion.button
-              className='mt-8 text-ink-red/60 uppercase tracking-widest text-sm'
+              className='mt-8 text-sm uppercase tracking-widest text-ink-red/60'
               style={{ fontFamily: "var(--font-fraunces), serif" }}
               onClick={() => {
-                playTap();
+                playSound("tap");
                 setIsReading(false);
               }}
               whileHover={{ color: "#D91A1A" }}
@@ -125,11 +168,14 @@ export default function LetterPage() {
           /* ===== Envelope View ===== */
           <motion.div
             key='envelope'
-            className='relative flex flex-col items-center'
+            className='relative z-[60] flex flex-col items-center'
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -30 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            transition={{
+              duration: 0.8,
+              ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+            }}
           >
             <div
               className='relative'
@@ -143,10 +189,9 @@ export default function LetterPage() {
               tabIndex={0}
               aria-label={isOpen ? "Click to read the letter" : "Click to open the envelope"}
             >
-              {/* ===== Envelope Back (visible when open) ===== */}
-              {/* Main envelope body */}
+              {/* Envelope body */}
               <div
-                className='absolute inset-0 rounded-sm overflow-hidden'
+                className='absolute inset-0 overflow-hidden rounded-sm'
                 style={{ background: "#A31515" }}
               >
                 {/* Bottom triangle */}
@@ -178,36 +223,31 @@ export default function LetterPage() {
                 />
               </div>
 
-              {/* ===== Letter Paper (slides out when open) ===== */}
+              {/* Letter paper (slides out when open) */}
               <AnimatePresence>
                 {isOpen && (
                   <motion.div
-                    className='absolute left-[8%] right-[8%] bg-white rounded-sm shadow-lg'
+                    className='absolute left-[8%] right-[8%] rounded-sm bg-white shadow-lg'
                     style={{
                       fontFamily: "var(--font-fraunces), serif",
                       zIndex: 5,
                     }}
                     initial={{ top: "30%", height: "40%", opacity: 0 }}
                     animate={{ top: "-55%", height: "80%", opacity: 1 }}
-                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{
+                      duration: 0.8,
+                      ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+                    }}
                   >
                     <div className='p-6 md:p-8'>
-                      <p className='text-ink-red italic text-lg md:text-xl'>Dear Love,</p>
-                      <p className='text-ink-red/40 mt-1 text-sm'>...</p>
+                      <p className='text-lg italic text-ink-red md:text-xl'>Dear Love,</p>
+                      <p className='mt-1 text-sm text-ink-red/40'>...</p>
                     </div>
-                    {/* Slight rotation for realism */}
-                    <motion.div
-                      className='absolute inset-0'
-                      initial={{ rotate: 0 }}
-                      animate={{ rotate: -2 }}
-                      transition={{ delay: 0.3, duration: 0.5 }}
-                      style={{ transformOrigin: "bottom center" }}
-                    />
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* ===== Envelope Flap (top triangle) ===== */}
+              {/* Envelope flap */}
               <motion.div
                 className='absolute top-0 left-0 w-full'
                 style={{
@@ -218,13 +258,16 @@ export default function LetterPage() {
                   clipPath: "polygon(0 0, 50% 100%, 100% 0)",
                 }}
                 animate={isOpen ? { rotateX: 180, opacity: 0.5 } : { rotateX: 0, opacity: 1 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                transition={{
+                  duration: 0.6,
+                  ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+                }}
               />
             </div>
 
             {/* Click text */}
             <motion.p
-              className='mt-6 text-ink-red/50 uppercase tracking-widest text-sm'
+              className='mt-6 text-sm uppercase tracking-widest text-ink-red/50'
               style={{ fontFamily: "var(--font-fraunces), serif" }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
