@@ -22,7 +22,6 @@ export function ValPrompt() {
   const handleYes = () => {
     playSound("switch");
 
-    // Confetti burst!
     confetti({
       particleCount: 150,
       spread: 80,
@@ -36,7 +35,6 @@ export function ValPrompt() {
       colors: ["#D91A1A", "#ff6b6b", "#ff1493", "#FFD700"],
     });
 
-    // Navigate after confetti
     setTimeout(() => router.push("/letter"), 1800);
   };
 
@@ -46,16 +44,17 @@ export function ValPrompt() {
     setNoCount(next);
 
     if (next >= 3) {
-      // 3rd no — she said "yes"
       setShowBanner(true);
       setTimeout(() => router.push("/letter"), 2500);
     }
   };
 
   // Scale factors based on no count
-  const yesScale = 1 + noCount * 0.45;
+  const yesSize = 80 + noCount * 30;
   const noScale = Math.max(0.3, 1 - noCount * 0.3);
   const noOpacity = Math.max(0.2, 1 - noCount * 0.35);
+  // Shift content up as Yes grows
+  const liftY = noCount * -15;
 
   if (!visible) return null;
 
@@ -65,7 +64,7 @@ export function ValPrompt() {
       <AnimatePresence>
         {showBanner && (
           <motion.div
-            className='fixed inset-0 z-[100] flex items-center justify-center'
+            className='fixed inset-0 z-100 flex items-center justify-center'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -88,9 +87,9 @@ export function ValPrompt() {
 
       {/* Val prompt */}
       <motion.div
-        className='absolute right-12 bottom-16 z-30 flex flex-col items-center overflow-visible md:right-20 md:bottom-20 lg:right-28'
+        className='absolute right-16 bottom-20 z-30 flex flex-col items-center md:right-24 md:bottom-24 lg:right-32'
         initial={{ opacity: 0, scale: 0, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
+        animate={{ opacity: 1, scale: 1, y: liftY }}
         transition={{ type: "spring", damping: 15, stiffness: 200 }}
       >
         {/* Flower */}
@@ -121,7 +120,7 @@ export function ValPrompt() {
         </motion.p>
 
         {/* Buttons */}
-        <div className='flex items-center gap-4'>
+        <div className='flex items-end gap-6'>
           {/* No button */}
           <motion.button
             onClick={handleNo}
@@ -140,25 +139,42 @@ export function ValPrompt() {
             No
           </motion.button>
 
-          {/* Yes button - heart shaped */}
+          {/* Yes button - SVG heart */}
           <motion.button
             onClick={handleYes}
-            className='relative flex items-center justify-center text-white font-semibold'
+            className='relative flex items-center justify-center'
             style={{
+              width: yesSize,
+              height: yesSize,
               fontFamily: "var(--font-fraunces), serif",
-              background: "linear-gradient(135deg, #D91A1A, #ff4444)",
-              clipPath:
-                "path('M 50 90 C 25 70, 0 50, 0 30 C 0 10, 15 0, 30 0 C 40 0, 48 8, 50 15 C 52 8, 60 0, 70 0 C 85 0, 100 10, 100 30 C 100 50, 75 70, 50 90 Z')",
-              width: `${80 * yesScale}px`,
-              height: `${80 * yesScale}px`,
-              fontSize: `${0.85 * yesScale}rem`,
             }}
-            animate={{ scale: yesScale }}
+            animate={{ width: yesSize, height: yesSize }}
             transition={{ type: "spring", damping: 12 }}
-            whileHover={{ scale: yesScale * 1.1 }}
-            whileTap={{ scale: yesScale * 0.95 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <span className='mt-2'>Yes</span>
+            <svg
+              viewBox='0 0 100 100'
+              className='absolute inset-0 h-full w-full'
+              style={{ filter: "drop-shadow(0 4px 12px rgba(217, 26, 26, 0.3))" }}
+            >
+              <defs>
+                <linearGradient id='heartGrad' x1='0' y1='0' x2='1' y2='1'>
+                  <stop offset='0%' stopColor='#D91A1A' />
+                  <stop offset='100%' stopColor='#ff4444' />
+                </linearGradient>
+              </defs>
+              <path
+                d='M50 88 C25 68, 0 50, 0 30 C0 10, 15 0, 30 0 C40 0, 48 8, 50 15 C52 8, 60 0, 70 0 C85 0, 100 10, 100 30 C100 50, 75 68, 50 88Z'
+                fill='url(#heartGrad)'
+              />
+            </svg>
+            <span
+              className='relative z-10 font-semibold text-white'
+              style={{ fontSize: `${Math.max(0.8, yesSize / 90)}rem`, marginTop: "4px" }}
+            >
+              Yes
+            </span>
           </motion.button>
         </div>
       </motion.div>

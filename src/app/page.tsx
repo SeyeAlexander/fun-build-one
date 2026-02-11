@@ -68,7 +68,7 @@ export default function HomePage() {
       <PageHeader ctaText='Claim Your Date' ctaHref='/letter' />
 
       {/* Main hero */}
-      <main className='relative z-10 flex flex-1 flex-col items-center justify-center'>
+      <main className='relative z-10 flex w-full flex-1 flex-col items-center justify-center'>
         <RotatingHero row1Ref={row1Ref} row2Ref={row2Ref} />
 
         {/* Val Prompt — bottom right of hero */}
@@ -81,6 +81,7 @@ export default function HomePage() {
         style={{ height: 120 }}
       >
         <div className='staple mb-6' />
+
         <motion.button
           onClick={handleCTA}
           className='group relative border-none bg-transparent uppercase tracking-widest text-ink-red'

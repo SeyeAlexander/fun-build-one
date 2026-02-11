@@ -32,7 +32,7 @@ export function PageHeader({ ctaText, ctaHref }: PageHeaderProps) {
     <>
       {/* Feb. 14 — top left */}
       <motion.button
-        className='absolute top-8 left-8 z-[100] border-none bg-transparent text-base font-normal tracking-widest uppercase text-ink-red'
+        className='absolute top-8 left-8 z-100 border-none bg-transparent text-base font-normal tracking-widest uppercase text-ink-red'
         style={{ fontFamily: "var(--font-fraunces), serif" }}
         variants={cornerVariants}
         initial='hidden'
@@ -49,7 +49,7 @@ export function PageHeader({ ctaText, ctaHref }: PageHeaderProps) {
 
       {/* RSVP — top right */}
       <motion.button
-        className='absolute top-8 right-8 z-[100] border-none bg-transparent text-base font-normal tracking-widest uppercase text-ink-red'
+        className='absolute top-8 right-8 z-100 border-none bg-transparent text-base font-normal tracking-widest uppercase text-ink-red'
         style={{ fontFamily: "var(--font-fraunces), serif" }}
         variants={cornerVariants}
         initial='hidden'

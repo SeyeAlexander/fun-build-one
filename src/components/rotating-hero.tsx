@@ -10,9 +10,12 @@ const PHRASES = [
   ["Fola", "Yemi"],
   ["Snow", "Flake"],
   ["Emi", "Oga"],
+  ["Be my", "Val?"],
+  ["Ehn", "Baby"],
+  ["Baby", "Mi"],
 ];
 
-const INTERVAL = 5000; // 5 seconds per phrase
+const INTERVAL = 7000; // 5 seconds per phrase
 
 export function RotatingHero({
   row1Ref,
@@ -41,7 +44,7 @@ export function RotatingHero({
       {/* Row 1 */}
       <div
         ref={row1Ref}
-        className='relative z-[2] select-none whitespace-nowrap'
+        className='relative z-2 select-none whitespace-nowrap'
         style={{
           fontSize: "clamp(6rem, 22vw, 24rem)",
           fontWeight: 800,
@@ -73,7 +76,7 @@ export function RotatingHero({
       {/* Row 2 — slightly delayed flip */}
       <div
         ref={row2Ref}
-        className='relative z-[1] select-none whitespace-nowrap'
+        className='relative z-1 select-none whitespace-nowrap'
         style={{
           fontSize: "clamp(6rem, 22vw, 24rem)",
           fontWeight: 800,
